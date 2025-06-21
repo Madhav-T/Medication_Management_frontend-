@@ -14,7 +14,7 @@ const App = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState('');
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [showSignup, setShowSignup] = useState(true); // ✅ Default to Signup
+  const [showSignup, setShowSignup] = useState(true);
 
   useEffect(() => {
     if (token) {
@@ -34,7 +34,7 @@ const App = () => {
     localStorage.removeItem('token');
     setToken(null);
     setRole('');
-    navigate('/'); // Optionally go back to dashboard or root
+    navigate('/');
   };
 
   const hideNavbar = location.pathname === '/';
@@ -80,7 +80,7 @@ const App = () => {
         <Navbar role={role} setRole={setRole} onLogout={handleLogout} />
       )}
       <Routes>
-        <Route path="/" element={<Dashboard setRole={setRole} />} />
+        <Route path="/" element={<Dashboard setRole={setRole} setShowSignup={setShowSignup} />} />
         <Route path="/patient" element={<Patient />} />
         <Route path="/caretaker" element={<Caretaker />} />
       </Routes>

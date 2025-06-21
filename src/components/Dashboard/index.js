@@ -2,12 +2,13 @@ import React from 'react';
 import './index.css';
 import { useNavigate } from 'react-router-dom';
 
-const Dashboard = ({ setRole }) => {
+const Dashboard = ({ setRole, setShowSignup }) => {
   const navigate = useNavigate();
 
   const handleSelect = (role) => {
     setRole(role);
-    navigate(`/${role}`);
+    setShowSignup(true); // or false to start at Login instead of Signup
+    navigate('/'); // This allows App.js to show the auth view
   };
 
   return (
