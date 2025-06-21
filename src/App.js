@@ -1,25 +1,91 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
+import Navbar from './components/Navbar';
+import Dashboard from './components/Dashboard';
+import Patient from './components/Patient';
+import Caretaker from './components/Caretaker';
+import Login from './components/Login';
+import Signup from './components/Signup';
+
+const App = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [role, setRole] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [showSignup, setShowSignup] = useState(true); // ✅ Default to Signup
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setRole(decoded.role);
+        if (decoded.role === 'patient') navigate('/patient');
+        else if (decoded.role === 'caretaker') navigate('/caretaker');
+      } catch {
+        localStorage.removeItem('token');
+        setToken(null);
+      }
+    }
+  }, [token, navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setRole('');
+    navigate('/'); // Optionally go back to dashboard or root
+  };
+
+  const hideNavbar = location.pathname === '/';
+
+  if (!token) {
+    return (
+      <div>
+        {showSignup ? (
+          <Signup
+            onSignupSuccess={(tok) => {
+              localStorage.setItem('token', tok);
+              setToken(tok);
+            }}
+          />
+        ) : (
+          <Login
+            onLogin={(tok) => {
+              localStorage.setItem('token', tok);
+              setToken(tok);
+            }}
+          />
+        )}
+        <p style={{ textAlign: 'center', marginTop: '10px' }}>
+          {showSignup ? (
+            <>
+              Already have an account?{' '}
+              <button onClick={() => setShowSignup(false)}>Login</button>
+            </>
+          ) : (
+            <>
+              Don’t have an account?{' '}
+              <button onClick={() => setShowSignup(true)}>Sign Up</button>
+            </>
+          )}
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {!hideNavbar && (
+        <Navbar role={role} setRole={setRole} onLogout={handleLogout} />
+      )}
+      <Routes>
+        <Route path="/" element={<Dashboard setRole={setRole} />} />
+        <Route path="/patient" element={<Patient />} />
+        <Route path="/caretaker" element={<Caretaker />} />
+      </Routes>
+    </>
   );
-}
+};
 
 export default App;
