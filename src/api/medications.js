@@ -1,13 +1,17 @@
-import { api } from './index';
+// src/api/medications.js
+import {api} from './index';
 
-export const getMedications = async (token) => {
-  return api('/medications', 'GET', null, token);
+export const getMedications = async () => {
+  const res = await api.get('/medications');
+  return res.data;
 };
 
-export const addMedication = async (medication, token) => {
-  return api('/medications', 'POST', medication, token);
+export const addMedication = async (medication) => {
+  const res = await api.post('/medications', medication);
+  return res.data;
 };
 
-export const markMedicationTaken = async ({ medId, date }, token) => {
-  return api('/medications/taken', 'POST', { medId, date }, token);
+export const markMedicationTaken = async ({ medId, date }) => {
+  const res = await api.post('/medications/taken', { medId, date });
+  return res.data;
 };

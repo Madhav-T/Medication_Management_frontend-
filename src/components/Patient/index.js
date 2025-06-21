@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { markMedicationTaken, getMedications } from '../../api/medications';
 import './index.css';
 
 const Patient = () => {
@@ -6,10 +7,49 @@ const Patient = () => {
   const [isTakenToday, setIsTakenToday] = useState(false);
   const [takenDates, setTakenDates] = useState(new Set());
 
-  const handleMarkAsTaken = () => {
-    setIsTakenToday(true);
-    setTakenDates(prev => new Set(prev).add(todayDate));
-  };
+  useEffect(() => {
+      const fetchTakenDates = async () => {
+        try {
+          const token = localStorage.getItem('token'); // ⬅️ Get token here
+          const meds = await getMedications(token);
+          const med = meds[0]; // Adjust if you handle multiple meds
+
+          if (med?.takenDates?.length) {
+            const dateSet = new Set(
+              med.takenDates.map(dateStr => new Date(dateStr).getDate())
+            );
+            setTakenDates(dateSet);
+
+            const today = new Date().toISOString().split('T')[0];
+            if (med.takenDates.includes(today)) {
+              setIsTakenToday(true);
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching medications:', err.message);
+        }
+      };
+
+      fetchTakenDates();
+    }, []);
+
+    // ✅ 2. Mark medication as taken
+    const handleMarkAsTaken = async () => {
+      try {
+        const token = localStorage.getItem('token'); // ⬅️ Again get token
+        const meds = await getMedications(token);
+        const med = meds[0];
+
+        const today = new Date().toISOString().split('T')[0];
+        await markMedicationTaken({ medId: med.id, date: today }, token);
+
+        setIsTakenToday(true);
+        setTakenDates(prev => new Set(prev).add(todayDate));
+      } catch (err) {
+        alert('Failed to mark as taken: ' + err.message);
+      }
+    };
+
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
